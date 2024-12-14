@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2 class="title">Actualizar Miembro</h2>
+
+<div class="card">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ miembro_form.as_p }}
+        <button type="submit" class="btn-primary">Actualizar</button>
+    </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    {% if success %}
+        Swal.fire({
+            icon: 'success',
+            title: '¡Éxito!',
+            text: '¡El miembro ha sido actualizado con éxito!',
+            confirmButtonText: 'OK'
+        }).then(() => {
+            // Redirigir después de cerrar la alerta
+            window.location.href = "{% url 'miembros_lista' %}";
+        });
+    {% endif %}
+</script>
+
+<style>
+    /* Centrar y poner en negritas el título */
+    .title {
+        text-align: center;
+        margin-bottom: 20px;
+        font-family: Arial, sans-serif;
+        color: #333;
+        font-weight: bold;
+    }
+
+    /* Estilo de la tarjeta */
+    .card {
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 20px;
+        width: 50%;
+        margin: 0 auto;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Diseño responsive */
+    @media (max-width: 768px) {
+        .card {
+            width: 100%;
+        }
+    }
+
+    /* Estilos del botón */
+    .btn-primary {
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        padding: 10px 40px; /* Aumentar tamaño del botón */
+        font-size: 16px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        background-color: #45a049;
+    }
+
+    .btn-primary:focus {
+        outline: none;
+        box-shadow: 0 0 5px rgba(0, 128, 0, 0.8);
+    }
+</style>
+{% endblock %}

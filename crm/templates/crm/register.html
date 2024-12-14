@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block content %}
+
+{% load static %}
+
+<html>
+    <link rel="stylesheet" href="{% static 'css/' %}">
+
+    <h1 class="kkk"> Registro nuevo </h1>
+    <a href="http://127.0.0.1:8000/miembros/">Volver al inicio</a>
+    <form method="POST" autocomplete="off">
+
+        {% csrf_token %}
+        {{ registerform.as_p }}
+
+        <input type="submit" value="Register">
+    </form>
+
+</html>
+
+{% endblock %}

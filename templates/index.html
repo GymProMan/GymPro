@@ -1,0 +1,251 @@
+{% extends 'base.html' %}
+{% block content %}
+    <div class="container py-2">
+        <!-- Título principal -->
+        <h1 class="fw-bold text-center mb-4" style="color: #004846;">Dashboard Principal</h1>
+
+        <!-- Tarjetas de estadísticas -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card text-white" style="background-color: #1DB954;">
+                    <div class="card-body">
+                        <h5 class="card-title">Membresías Activas</h5>
+
+                        <p class="card-text display-6 bi bi-person-fill-check" id="membresias_activas"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-white" style="background-color: #004846;">
+                    <div class="card-body">
+                        <h5 class="card-title">Ingresos Mensuales</h5>
+                        <p class=" card-text display-6 bi bi-currency-dollar " id="ingresos_mensuales"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-white" style="background-color: #4E525A;">
+                    <div class="card-body">
+                        <h5 class="card-title">Nuevos Miembros</h5>
+                        <p class="card-text display-6 bi bi-person-fill-add" id="nuevos_miembros"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-white" style="background-color: #0d263e;">
+                    <div class="card-body">
+                        <h5 class="card-title">Membresías Vencidas</h5>
+                        <p class="card-text display-6 bi bi-person-fill-exclamation" id="membresias_vencidas"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráficos -->
+        <div class="row">
+            <!-- Gráfico de líneas -->
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header" style="background-color: #dcdcdc; color: #000000;">Crecimiento de
+                        Membresías
+                    </div>
+                    <div class="card-body">
+                        <canvas id="lineChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráfico de barras -->
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header" style="background-color: #dcdcdc; color: #000000;">Ingresos Totales por
+                        Año
+                    </div>
+                    <div class="card-body">
+                        <canvas id="barChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <!-- Gráfico de Dona -->
+<div class="col-md-6 mb-4">
+    <div class="card">
+        <div class="card-header" style="background-color: #dcdcdc; color: #000000;">Stock de Productos</div>
+        <div class="card-body text-center">
+            <div style="width: 75%; margin: 0 auto;"> <!-- Ajusta el ancho aquí -->
+                <canvas id="radarChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Gráfico de Pastel -->
+<div class="col-md-6 mb-4">
+    <div class="card">
+        <div class="card-header" style="background-color: #dcdcdc; color: #000000;">Distribución de Membresías</div>
+        <div class="card-body text-center">
+            <div style="width: 75%; margin: 0 auto;"> <!-- Ajusta el ancho aquí -->
+                <canvas id="pieChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+        </div>
+    </div>
+    <!-- Accesos rápidos 
+    <div class="d-flex justify-content-around flex-wrap mb-4">
+        <a href="{% url 'registrar_asistencia' %}" class="btn btn-lg mb-2"
+           style="background-color: #1DB954; color: #FFFFFF;">
+            <i class="bi bi-person-plus"></i> Acceso
+        </a>
+        <a href="{% url 'miembros_lista' %}" class="btn btn-lg mb-2" style="background-color: #004846; color: #FFFFFF;">
+            <i class="bi bi-card-list"></i> Miembros
+        </a>
+        <a href="{% url 'listar_asistencias' %}" class="btn btn-lg mb-2"
+           style="background-color: #4E525A; color: #FFFFFF;">
+            <i class="bi bi-graph-up"></i> Reportes
+        </a>
+        <a href="#" class="btn btn-lg mb-2" style="background-color: #0d263e; color: #FFFFFF;">
+            <i class="bi bi-gear"></i> Configuración
+        </a>
+    </div>
+-->
+
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // Colores personalizados
+        const colors = {
+            blanco: '#FFFFFF',
+            verdeOscuro: '#004846',
+            verdeClaro: '#1DB954',
+            grisClaro: '#4E525A',
+            grisOscuro: '#0d263e'
+        };
+
+        // Gráfico de líneas
+        const lineCtx = document.getElementById('lineChart').getContext('2d');
+
+        // Cargar datos dinámicamente
+        fetch('/miembros/miembros-registrados-mes/')
+            .then(response => response.json())
+            .then(data => {
+                new Chart(lineCtx, {
+                    type: 'line',
+                    data: {
+                        labels: data.labels, // Etiquetas dinámicas (Año-Mes)
+                        datasets: [{
+                            label: 'Nuevos Miembros',
+                            data: data.data, // Datos dinámicos (cantidad de registros por mes)
+                            borderColor: colors.verdeClaro,
+                            tension: 0.1,
+                            fill: false
+                        }]
+                    },
+                    options: {
+                        responsive: true
+                    }
+                });
+            })
+            .catch(error => console.error('Error al cargar los datos de la gráfica:', error));
+
+        //Grafica de barras para ingresos
+        const barCtx = document.getElementById('barChart').getContext('2d');
+        // Cargar datos dinámicamente
+        fetch('/productos/ingresos-totales-mes/')
+            .then(response => response.json())
+            .then(data => {
+                new Chart(barCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.labels, // Etiquetas dinámicas (Año-Mes)
+                        datasets: [{
+                            label: 'Ingresos ($)',
+                            data: data.data, // Datos dinámicos (ingresos por mes)
+                            backgroundColor: colors.verdeClaro,
+                            borderColor: colors.verdeOscuro,
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            })
+            .catch(error => console.error('Error al cargar los datos de la gráfica:', error));
+
+        // Gráfico de radar
+        const donutCtx = document.getElementById('radarChart').getContext('2d');
+
+        // Cargar datos dinámicamente para el gráfico de dona
+        fetch('/productos/stock-productos/')
+            .then(response => response.json())
+            .then(data => {
+                new Chart(donutCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: data.labels, // Nombres de los productos
+                        datasets: [{
+                            data: data.data, // Existencias de los productos
+                            backgroundColor: [
+                                '#1DB954', '#004846', '#4E525A', '#0d263e', '#FFD700',
+                                '#FF6347', '#ADFF2F', '#00CED1', '#9400D3', '#FF4500'
+                            ] // Colores personalizables
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            },
+                        }
+                    }
+                });
+            })
+            .catch(error => console.error('Error al cargar los datos del gráfico de dona:', error));
+
+        // Gráfico de pastel
+        const pieCtx = document.getElementById('pieChart').getContext('2d');
+
+        // Cargar datos dinámicamente
+        fetch('/miembros/distribucion-membresias/')
+            .then(response => response.json())
+            .then(data => {
+                new Chart(pieCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: data.labels, // Etiquetas dinámicas (tipos de membresías)
+                        datasets: [{
+                            data: data.data, // Datos dinámicos (cantidad de miembros)
+                            backgroundColor: ['#1DB954', '#004846', '#4E525A', '#0d263e', '#dcdcdc'], // Colores
+                        }]
+                    },
+                    options: {
+                        responsive: true
+                    }
+                });
+            })
+            .catch(error => console.error('Error al cargar los datos de la gráfica:', error));
+
+
+        fetch('/miembros/dashboard/')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('membresias_activas').innerText = data.membresias_activas;
+                document.getElementById('ingresos_mensuales').innerText = data.ingresos_mensuales;
+                document.getElementById('nuevos_miembros').innerText = data.nuevos_miembros;
+                document.getElementById('membresias_vencidas').innerText = data.membresias_vencidas;
+            })
+            .catch(error => console.error('Error al obtener los datos del dashboard:', error));
+
+    </script>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Menu</h1>
+<a href="{% url 'listar_productos' %}">Productos</a>
+<a href="{% url 'listar_proveedores' %}">Proveedores</a>
+<a href="{% url 'registrar_compra' %}">Comprar Productos</a>
+<a href="{% url 'registrar_venta' %}">Vender Productos</a>
+<br>
+<a href="http://127.0.0.1:8000/miembros/">Volver al inicio</a>
+<br>
+<a href="{% url 'user_logout' %}">Cerrar Sesion</a>
+{% endblock %}

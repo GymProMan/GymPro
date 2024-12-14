@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2 class="title">Historial de Asistencias</h2>
+<div class="card">
+    <!-- Formulario para ingresar la clave del empleado -->
+    <form method="post" action="." class="mb-4">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="clave" class="form-label">Ingrese la clave del empleado:</label>
+            <input type="text" name="clave" id="clave" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-success">Mostrar Asistencias</button>
+    </form>
+
+    <!-- Mostrar el nombre del empleado si existe -->
+    {% if empleado_nombre %}
+        <h3 class="subtitle">Asistencias de {{ empleado_nombre }}</h3>
+    {% endif %}
+
+    <!-- Bloque para mostrar el historial o un mensaje si no hay asistencias -->
+    <div class="mt-4">
+        {% if asistencias is not None %}
+            {% if asistencias %}
+                <!-- Tabla de asistencias del empleado -->
+                <table class="table table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Hora de Entrada</th>
+                            <th>Hora de Salida</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for asistencia in asistencias %}
+                            <tr>
+                                <td>{{ asistencia.fecha }}</td>
+                                <td>{{ asistencia.hora_entrada }}</td>
+                                <td>{{ asistencia.hora_salida|default:"-" }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <!-- Mensaje cuando no hay asistencias para el empleado -->
+                <div class="alert alert-warning">No hay asistencias registradas para este empleado.</div>
+            {% endif %}
+        {% else %}
+            <!-- Mensaje inicial si aún no se ha enviado el formulario -->
+            <div class="alert alert-info">Ingrese la clave del empleado y haga clic en "Mostrar Asistencias" para ver el historial.</div>
+        {% endif %}
+    </div>
+
+    <div class="text-center mt-4">
+        <a href="{% url 'index_personal' %}" class="btn btn-dark">Volver al Inicio</a>
+    </div>
+</div>
+
+<style>
+    /* Centrar y poner en negritas el título */
+    .title {
+        text-align: center;
+        margin-bottom: 20px;
+        font-family: Arial, sans-serif;
+        color: #333;
+        font-weight: bold;
+    }
+
+    .subtitle {
+        margin-top: 30px;
+        font-size: 1.2rem;
+        color: #555;
+        font-weight: bold;
+    }
+
+    /* Estilo de la tarjeta */
+    .card {
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 20px;
+        width: 50%;
+        margin: 0 auto;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Diseño responsive */
+    @media (max-width: 768px) {
+        .card {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}

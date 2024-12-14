@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2 class="title">Rutina para {{ miembro.nombre }} {{ miembro.apellido }}</h2>
+<div class="card">
+    <form method="POST">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="nombre">Nombre de la rutina:</label>
+            <input type="text" id="nombre" name="nombre" value="{{ rutina.nombre|default_if_none:'' }}" required class="form-control2">
+        </div>
+
+        <div class="form-group">
+            <label for="objetivo">Objetivo:</label>
+            <input type="text" id="objetivo" name="objetivo" value="{{ rutina.objetivo|default_if_none:'' }}" required class="form-control2">
+        </div>
+
+        <div class="form-group">
+            <label for="nota">Nota:</label>
+            <textarea id="nota" name="nota" class="form-control2">{{ rutina.nota|default_if_none:'' }}</textarea>
+        </div>
+
+        <div class="form-group" style="text-align: center;">
+            <button type="submit" class="btn btn-success">{% if rutina %}Modificar{% else %}Crear Rutina {% endif %}</button>
+        </div>
+    </form>
+
+
+</div>
+
+<style>
+    /* Estilo del título */
+    .title {
+        text-align: center;
+        margin-bottom: 20px;
+        font-family: Arial, sans-serif;
+        color: #333;
+        font-weight: bold;
+    }
+
+    /* Diseño de la tarjeta */
+    .card {
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 20px;
+        width: 50%;
+        margin: 0 auto;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Diseño responsive */
+    @media (max-width: 768px) {
+        .card {
+            width: 100%;
+        }
+    }
+
+
+
+    /* Estilo de campos de entrada */
+    .form-control2 {
+        width: 100%;
+        padding: 10px;
+        margin-top: 8px;
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+</style>
+{% endblock %}

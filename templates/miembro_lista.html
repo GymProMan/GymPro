@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+    <div class="d-flex justify-content-between align-items-center mb-4" style="padding-bottom: 1rem;">
+        <h2 class="fw-bold">Lista de Miembros</h2>
+        <a href="{% url 'crear_miembro' %}" class="btn btn-success">
+            <i class="bi bi-plus-circle"></i> Crear Nuevo Miembro
+        </a>
+    </div>
+
+    <style>
+        table {
+            width: 100%;
+            table-layout: auto;
+        }
+
+        th, td {
+            text-overflow: ellipsis; /* Agrega "..." si el contenido es muy largo */
+            overflow: hidden; /* Esconde el texto que se desborda */
+            white-space: nowrap; /* Evita que el texto haga salto de línea */
+        }
+
+        .dataTables_wrapper {
+            overflow-x: auto;
+        }
+    </style>
+
+    <table id="miembrosTable" class="display">
+        <thead>
+        <tr>
+            <th>Clave</th>
+            <th>Nombre</th>
+            <th>Membresía</th>
+            <th>Estado</th>
+            <th>Fecha de Finalización</th>
+            <th>Acciones</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for miembro in miembros %}
+            
+            <tr>
+             <td>{{ miembro.clave }}</td> 
+                <td>{{ miembro.nombre }} {{ miembro.apellido }}</td>
+                <td>
+                    {% for membresia in membresias_activa %}
+                        {% if membresia.miembro_id == miembro.id %}
+                            {{ membresia }}
+                        {% endif %}
+                    {% endfor %}
+                </td>
+                <td>
+                    {% for membresia in membresias_activa %}
+                        {% if membresia.miembro_id == miembro.id %}
+                            {% if fecha_actual >= membresia.fecha_final %}
+                                <span class="badge bg-danger">Inactivo</span>
+                            {% else %}
+                                <span class="badge bg-success">Activo</span>
+                            {% endif %}
+                        {% endif %}
+                    {% empty %}
+                        <span class="badge bg-danger">Inactivo</span>
+                    {% endfor %}
+                </td>
+                <td>
+                    {% for membresia in membresias_activa %}
+                        {% if membresia.miembro_id == miembro.id %}
+                            {{ membresia.fecha_final }}
+                        {% endif %}
+                    {% endfor %}
+                </td>
+                <td>
+                    <a href="{% url 'actualizar_miembro' miembro.pk %}" class="btn btn-success btn-sm">
+                        <i class="bi bi-pencil"></i> Editar
+                    </a>
+                    <a href="{% url 'asignar_membresia' miembro.pk %}" class="btn btn-dark btn-sm asignar-membresia-btn"
+                       data-url="{% url 'asignar_membresia' miembro.pk %}">
+                        <i class="bi bi-plus-circle"></i> Asignar Membresía
+                    </a>
+
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- DataTables JS -->
+    <script type="text/javascript" src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('#miembrosTable').DataTable({
+                "language": {
+                    "url": "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
+                }
+            });
+        });
+
+
+        $(document).on('click', '.asignar-membresia-btn', function (e) {
+            e.preventDefault();
+            const url = $(this).data('url');
+
+            $.ajax({
+                url: url,
+                type: 'GET',
+                headers: {'X-Requested-With': 'XMLHttpRequest'},
+                success: function () {
+                    // Redirige al formulario si no tiene membresía activa
+                    window.location.href = url;
+                },
+                error: function (xhr) {
+                    if (xhr.status === 400) {
+                        // Muestra SweetAlert2 si ya tiene membresía activa
+                        Swal.fire({
+                            title: 'Error',
+                            text: xhr.responseJSON.error,
+                            icon: 'error'
+                        });
+                    }
+                }
+            });
+        });
+    </script>
+
+{% endblock %}
+
+
+

@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+{% block content %}
+    {% load custom_filters %}
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Rutina</title>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    </head>
+    <body>
+    <div class="container my-2">
+        <div class="row">
+            <!-- Sección de Datos -->
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="card-title fw-bold text-start">Rutina de {{ miembro.nombre }}</h2>
+                        <p><strong>Clave:</strong> {{ miembro.clave }}</p>
+                        <p><strong>Nombre:</strong> {{ rutina.nombre }}</p>
+                        <p><strong>Nota:</strong> {{ rutina.nota }}</p>
+                        <p><strong>Objetivo:</strong> {{ rutina.objetivo }}</p>
+                        <p><strong>Género:</strong> {{ miembro.genero }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección de Formulario -->
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <h2 class="card-title fw-bold text-start mb-0">Añadir Ejercicio</h2>
+                            <div class="d-flex align-items-center">
+                                <label for="categoria" class="form-label mb-0 me-2">Categoría:</label>
+                                <select id="categoria" name="categoria" class="form-select form-select-sm w-auto"
+                                        onchange="filtrarEjercicios()">
+                                    <option value="" selected>Mostrar todo</option>
+                                    <option value="Pierna">Pierna</option>
+                                    <option value="Espalda">Espalda</option>
+                                    <option value="Gluteo">Glúteo</option>
+                                    <option value="Pecho">Pecho</option>
+                                    <option value="Hombro">Hombro</option>
+                                    <option value="Abdomen">Abdomen</option>
+                                    <option value="Bicep">Bíceps</option>
+                                    <option value="Tricep">Tríceps</option>
+                                    <option value="Antebrazo">Antebrazo</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <form method="POST" id="addExerciseForm" class="row g-3">
+                            {% csrf_token %}
+                            <div class="col-md-6">
+                                <label for="dia" class="form-label">Selecciona el día:</label>
+                                <select name="dia" id="dia" class="form-select" required>
+                                    {% for dia in dias %}
+                                        <option value="{{ dia }}">{{ dia }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="ejercicio" class="form-label">Selecciona un ejercicio:</label>
+                                <select name="ejercicio_id" id="ejercicio" class="form-select" required>
+                                    {% for ejercicio in ejercicios %}
+                                        <option value="{{ ejercicio.nombre }}"
+                                                data-categoria="{{ ejercicio.categoria }}">{{ ejercicio.nombre }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="series" class="form-label">Series:</label>
+                                <input type="text" name="series" id="series" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="repeticiones" class="form-label">Repeticiones:</label>
+                                <input type="text" name="repeticiones" id="repeticiones" class="form-control" required>
+                            </div>
+                            <div class="col-12 text-center">
+                                <button type="submit" class="btn btn-success w-100">Añadir</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla de Rutina -->
+        <h2 class="text-center fw-bold my-4">Tabla de Rutina</h2>
+        <table class="table table-hover table-bordered align-middle text-center">
+            <thead class="table-dark">
+            <tr>
+                <th>Día</th>
+                <th>Ejercicio</th>
+                <th>Series</th>
+                <th>Repeticiones</th>
+                <th>Imagen</th>
+                <th>Acción</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for dia in dias %}
+                <tr>
+                    <td colspan="6" class="table-light text-uppercase">
+                        <div class="d-flex justify-content-between align-items-center p-2">
+                            <span class="fw-bold">{{ dia }}</span>
+
+                        </div>
+                    </td>
+                </tr>
+                {% for ejercicio in carrito|get_item:dia %}
+                    <tr>
+                        <td></td>
+                        <td>{{ ejercicio.nombre }}</td>
+                        <td>{{ ejercicio.series }}</td>
+                        <td>{{ ejercicio.repeticiones }}</td>
+                        <td>
+                            {% if ejercicio.foto %}
+                                <img src="{{ ejercicio.foto }}" alt="Imagen de ejercicio" class="img-fluid rounded"
+                                     style="max-height: 50px; max-width: 50px;">
+                            {% else %}
+                                <span class="text-muted">Sin imagen</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <form method="POST" action="{% url 'eliminar_ejercicio' %}" class="d-inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="dia" value="{{ dia }}">
+                                <input type="hidden" name="ejercicio_nombre" value="{{ ejercicio.nombre }}">
+                                <input type="hidden" name="clave" value="{{ miembro.clave }}">
+                                <button type="submit" class="btn btn-danger btn-sm">
+                                    <i class="bi bi-trash"></i> Eliminar
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+
+                {% endfor %}
+            {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="text-center mt-4">
+            <form method="POST" id="saveRoutineForm" action="{% url 'guardar_ejercicios' clave=miembro.clave %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success" style="padding: 8px 60px;">Guardar Rutina</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Mostrar SweetAlert2 al agregar un ejercicio
+        document.getElementById('addExerciseForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+            const form = this;
+            Swal.fire({
+                icon: 'success',
+                title: 'Ejercicio agregado',
+                text: 'El ejercicio ha sido agregado correctamente.',
+
+            }).then(() => {
+                form.submit();
+            });
+        });
+
+        // Mostrar SweetAlert2 al guardar la rutina
+        document.getElementById('saveRoutineForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+            const form = this;
+            Swal.fire({
+                icon: 'success',
+                title: 'Rutina guardada',
+                text: 'La rutina ha sido guardada exitosamente.',
+
+
+            }).then(() => {
+                form.submit();
+            });
+        });
+
+        function filtrarEjercicios() {
+            const categoriaSeleccionada = document.getElementById('categoria').value;
+            const ejercicios = document.querySelectorAll('#ejercicio option');
+            ejercicios.forEach(ejercicio => {
+                ejercicio.style.display = ejercicio.dataset.categoria === categoriaSeleccionada || categoriaSeleccionada === "" ? "block" : "none";
+            });
+            const primerEjercicioVisible = Array.from(ejercicios).find(e => e.style.display === "block");
+            if (primerEjercicioVisible) primerEjercicioVisible.selected = true;
+        }
+    </script>
+
+    <style>
+        .table img {
+            border: 1px solid #ddd;
+            padding: 4px;
+        }
+    </style>
+    </body>
+    </html>
+{% endblock %}

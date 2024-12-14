@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2 class="title">Detalle de la Compra #{{ compra.id }}</h2>
+<div class="card">
+
+    <div class="details">
+        <p><strong>Proveedor:</strong> {{ compra.proveedor.nombre }} {{ compra.proveedor.apellido }}</p>
+        <p><strong>Usuario:</strong> {{ compra.usuario.get_full_name }}</p>
+        <p><strong>Fecha:</strong> {{ compra.fecha_compra }}</p>
+        <p><strong>Total:</strong> ${{ compra.total }}</p>
+    </div>
+
+    <h2 class="subtitle">Productos Comprados</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio Unitario</th>
+                <th>Precio Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in productos %}
+                <tr>
+                    <td>{{ item.producto.nombre }}</td>
+                    <td>{{ item.cantidad }}</td>
+                    <td>${{ item.precio_unitario }}</td>
+                    <td>${{ item.precio_total }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{% url 'listar_compras' %}" class="btn btn-secondary">Volver al listado</a>
+</div>
+
+<style>
+    /* Título principal */
+    .title {
+        text-align: center;
+        margin-bottom: 20px;
+        font-family: Arial, sans-serif;
+        color: #333;
+        font-weight: bold;
+    }
+
+    /* Título secundario */
+    .subtitle {
+        margin-top: 30px;
+        margin-bottom: 10px;
+        font-size: 18px;
+        color: #555;
+    }
+
+    /* Contenedor principal */
+    .card {
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 20px;
+        width: 80%;
+        margin: 0 auto;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Tabla estilizada */
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    .table th, .table td {
+        border: 1px solid #ddd;
+        padding: 10px;
+        text-align: center;
+    }
+
+    .table th {
+        background-color: #f4f4f4;
+        font-weight: bold;
+    }
+
+
+</style>
+{% endblock %}

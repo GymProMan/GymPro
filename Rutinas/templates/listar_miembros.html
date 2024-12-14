@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css"/>
+
+    <div class="d-flex justify-content-between align-items-center mb-4" style="padding-bottom: 1rem;">
+        <h2 class="fw-bold">Rutinas para Miembros</h2>
+    </div>
+
+    <style>
+        table {
+            table-layout: fixed;
+            width: 100%;
+        }
+
+        th, td {
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .dataTables_wrapper {
+            overflow-x: auto;
+        }
+
+
+        /* Define el ancho de la columna "Estado" */
+        .col-porcentaje {
+            width: 8%; /* Ajusta este valor según tus necesidades */
+        }
+
+        .cos {
+            width: 25%; /* Ajusta este valor según tus necesidades */
+        }
+
+
+    </style>
+
+    <table id="miembrosTable" class="display">
+        <thead>
+        <tr>
+            <th class="col-porcentaje">Clave</th>
+            <th class="cos">Nombre</th>
+            <th class="cos">Apellido</th>
+            <th>Acción</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for miembro in miembros %}
+            <tr>
+                <td>{{ miembro.clave }}</td>
+                <td>{{ miembro.nombre }}</td>
+                <td>{{ miembro.apellido }}</td>
+                <td>
+                    {% if miembro.tiene_rutina %}
+                        <a href="{% url 'crear_modificar_rutina' miembro.clave %}" class="btn btn-secondary btn-sm"><i class="bi bi-pencil-square"></i> Modificar
+                            Rutina</a>
+                        {% if not miembro.rutina_tiene_ejercicios %}
+                            <a href="{% url 'mostrar_rutina' miembro.clave %}" class="btn btn-success btn-sm"><i class="bi bi-plus-circle-dotted"></i> Diseñar
+                                Rutina</a>
+                        {% endif %}
+                    {% else %}
+                        <a href="{% url 'crear_modificar_rutina' miembro.clave %}" class="btn btn-success btn-sm"><i class="bi bi-plus-square"></i> Crear
+                            Rutina</a>
+                    {% endif %}
+                    {% if miembro.rutina_tiene_ejercicios %}
+                        <a href="{% url 'rutina_vista' miembro.clave %}" class="btn btn-dark btn-sm"><i class="bi bi-eye"></i> Ver Rutina</a>
+                        <a href="#"
+                           class="btn btn-danger btn-sm eliminar-btn"
+                           data-url="{% url 'eliminar_rutina' miembro.clave %}"
+                           data-nombre="la rutina de {{ miembro.nombre }} {{ miembro.apellido }}"><i class="bi bi-trash"></i>
+                            Eliminar Rutina
+                        </a>
+                    {% endif %}
+                </td>
+            </tr>
+
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- DataTables JS -->
+    <script type="text/javascript" src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        $(document).ready(function () {
+            // Inicializa DataTables en la tabla
+            $('#miembrosTable').DataTable({
+                "language": {
+                    "url": "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
+                },
+            });
+
+            // SweetAlert2 para la confirmación de eliminación
+            const deleteButtons = document.querySelectorAll('.eliminar-btn');
+            deleteButtons.forEach(button => {
+                button.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    const url = this.getAttribute('data-url');
+                    const nombre = this.getAttribute('data-nombre');
+
+                    Swal.fire({
+                        title: `¿Eliminar ${nombre}?`,
+                        text: "Esta acción no se puede revertir.",
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#d33",
+                        cancelButtonColor: "#3085d6",
+                        confirmButtonText: "Sí, eliminar",
+                        cancelButtonText: "Cancelar"
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            fetch(url, {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRFToken': '{{ csrf_token }}'
+                                }
+                            })
+                                .then(response => {
+                                    if (response.ok) {
+                                        Swal.fire(
+                                            'Eliminado',
+                                            `${nombre} ha sido eliminada con éxito.`,
+                                            'success'
+                                        ).then(() => {
+                                            window.location.reload();
+                                        });
+                                    } else {
+                                        response.json().then(data => {
+                                            Swal.fire(
+                                                'Error',
+                                                data.mensaje || 'No se pudo eliminar la rutina.',
+                                                'error'
+                                            );
+                                        });
+                                    }
+                                })
+                                .catch(error => {
+                                    Swal.fire(
+                                        'Error',
+                                        'Ocurrió un error al eliminar.',
+                                        'error'
+                                    );
+                                });
+                        }
+                    });
+                });
+            });
+        });
+    </script>
+
+{% endblock %}

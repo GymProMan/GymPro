@@ -1,0 +1,6 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Error</h2>
+<p>{{ mensaje }}</p>
+<a href="{% url 'listar_productos' %}">Volver a la lista de productos</a>
+{% endblock %}

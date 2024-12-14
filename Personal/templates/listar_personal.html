@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+{% block content %}
+<!-- DataTables CSS -->
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+<!-- Contenedor para el título y el botón -->
+<div class="d-flex justify-content-between align-items-center mb-4" style="padding-bottom: 1rem;">
+    <!-- Título en negritas -->
+    <h2 class="fw-bold">Listado de Personal</h2>
+
+    <!-- Botón para agregar nuevo personal -->
+    <a href="{% url 'crear_personal' %}" class="btn btn-success">
+        <i class="bi bi-plus-circle"></i> Agregar Personal
+    </a>
+</div>
+
+<style>
+    table {
+        table-layout: fixed; /* Define un ancho fijo para las columnas */
+        width: 100%; /* Asegura que la tabla ocupe todo el espacio disponible */
+    }
+
+    th, td {
+        text-overflow: ellipsis; /* Agrega "..." si el contenido es muy largo */
+        overflow: hidden; /* Esconde el texto que se desborda */
+        white-space: nowrap; /* Evita que el texto haga salto de línea */
+    }
+
+    .dataTables_wrapper {
+        overflow-x: auto; /* Agrega desplazamiento horizontal si la tabla es demasiado grande */
+    }
+</style>
+
+<!-- Tabla con clase 'display' requerida por DataTables -->
+<table id="personalTable" class="display">
+    <thead>
+        <tr>
+            <th>Clave</th>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>Puesto</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for persona in personal_list %}
+        <tr>
+            <td>{{ persona.clave }}</td>
+            <td>{{ persona.nombre }}</td>
+            <td>{{ persona.apellido }}</td>
+            <td>{{ persona.puesto }}</td>
+            <td>
+                <a href="{% url 'modificar_personal' persona.clave %}" class="btn btn-success btn-sm">
+                    <i class="bi bi-pencil"></i> Modificar
+                </a>
+                |
+                <a href="#"
+                   class="btn btn-dark btn-sm eliminar-btn"
+                   data-url="{% url 'eliminar_personal' persona.clave %}"
+                   data-nombre="{{ persona.nombre }}">
+                   <i class="bi bi-trash"></i> Eliminar
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- DataTables JS -->
+<script type="text/javascript" src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+<!-- SweetAlert2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    $(document).ready(function () {
+        // Inicializa DataTables en la tabla
+        $('#personalTable').DataTable({
+            "language": {
+                "url": "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
+            },
+        });
+
+        // SweetAlert2 para la confirmación de eliminación
+        const deleteButtons = document.querySelectorAll('.eliminar-btn');
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function (event) {
+                event.preventDefault(); // Evita la acción predeterminada del enlace
+                const url = this.getAttribute('data-url'); // Obtiene la URL del atributo data-url
+                const nombre = this.getAttribute('data-nombre'); // Obtiene el nombre del personal
+
+                // Mostrar alerta de confirmación
+                Swal.fire({
+                    title: `¿Eliminar a ${nombre}?`,
+                    text: "No podrás revertir esta acción.",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#d33",
+                    cancelButtonColor: "#3085d6",
+                    confirmButtonText: "Sí, eliminar",
+                    cancelButtonText: "Cancelar"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Realizar la solicitud POST para eliminar
+                        fetch(url, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRFToken': '{{ csrf_token }}'
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire(
+                                    'Eliminado',
+                                    `${nombre} ha sido eliminado con éxito.`,
+                                    'success'
+                                ).then(() => {
+                                    // Recargar la página o eliminar la fila de la tabla
+                                    window.location.reload();
+                                });
+                            } else {
+                                Swal.fire(
+                                    'Error',
+                                    data.mensaje || 'No se pudo eliminar el personal.',
+                                    'error'
+                                );
+                            }
+                        })
+                        .catch(() => {
+                            Swal.fire(
+                                'Error',
+                                'Ocurrió un error al eliminar.',
+                                'error'
+                            );
+                        });
+                    }
+                });
+            });
+        });
+    });
+</script>
+
+{% endblock %}

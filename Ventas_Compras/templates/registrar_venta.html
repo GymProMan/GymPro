@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2 class="title">Registrar Venta</h2>
+
+<div class="card">
+    <form method="post" class="form-inline">
+        {% csrf_token %}
+        {{ buscar_form.as_p }}
+        <button type="submit" name="buscar_producto" class="btn btn-success">Buscar Producto</button>
+    </form>
+</div>
+
+<h1 class="title">Productos Seleccionados</h1>
+<div class="card">
+    <table class="table table-striped table-hover">
+        <thead class="ta">
+            <tr>
+                <th>Cantidad</th>
+                <th>Nombre</th>
+                <th>Código</th>
+                <th>Precio Unitario</th>
+                <th>Precio Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for producto in productos_vendidos %}
+            <tr>
+                <td>{{ producto.cantidad }}</td>
+                <td>{{ producto.nombre }}</td>
+                <td>{{ producto.codigo }}</td>
+                <td>${{ producto.precio_unitario }}</td>
+                <td>${{ producto.precio_total }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <p class="total"><strong>Total de la venta:</strong> ${{ total_venta }}</p>
+</div>
+
+<div class="card">
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" name="registrar_venta" class="btn btn-success">Registrar Venta</button>
+    </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    {% if mensaje_error %}
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: '{{ mensaje_error }}',
+            confirmButtonText: 'Entendido'
+        });
+    {% endif %}
+</script>
+
+<style>
+    /* Títulos */
+    .title {
+        text-align: center;
+        font-family: Arial, sans-serif;
+        color: #333;
+        margin-bottom: 20px;
+        font-weight: bold;
+    }
+
+    /* Tarjetas */
+    .card {
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 20px auto;
+        width: 80%;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Tabla */
+    .ta {
+        background-color: #454545;
+        color: white;
+    }
+
+    /* Total */
+    .total {
+        font-size: 18px;
+        font-weight: bold;
+        margin-top: 10px;
+        text-align: right;
+    }
+</style>
+{% endblock %}
